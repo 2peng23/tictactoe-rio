@@ -2,6 +2,8 @@
 
 A two-player Tic-Tac-Toe app built with React 19, Next.js 16, and TypeScript. A mint lightning bolt and orange flame replace X and O. Create a public room or invite a friend to a private one, then play from separate browsers or devices.
 
+Play online at [tactix-kappa.vercel.app](https://tactix-kappa.vercel.app). The production app runs on Vercel with a shared Turso database. Create a room and send its invitation link to the other player.
+
 ## Run locally
 
 Requires Node.js 20.9 or newer.
@@ -48,6 +50,8 @@ Existing browser identities and saved rooms migrate from the original name to Ta
 Expired room and presence records, and rate-limit records older than a day, are cleaned up when a room is created. Public listings hide rooms without recent player presence. Browser storage only remembers a display name and the most recent room; it never authorizes a player.
 
 ## Deploy on Vercel
+
+The current production deployment was uploaded directly from the committed source. The GitHub repository is not yet connected to Vercel for automatic deployments. Production database credentials are managed by the Turso integration and are scoped to Production; local development continues to use its own SQLite file.
 
 1. Create a persistent database in [Turso](https://turso.tech/) and obtain its `libsql://` database URL and an authentication token.
 2. Add this project to a Git repository and import it into [Vercel](https://vercel.com/new), selecting the Next.js preset. Alternatively, use Vercel’s CLI from this directory.
