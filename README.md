@@ -51,7 +51,7 @@ Expired room and presence records, and rate-limit records older than a day, are 
 
 ## Deploy on Vercel
 
-The current production deployment was uploaded directly from the committed source. The GitHub repository is not yet connected to Vercel for automatic deployments. Production database credentials are managed by the Turso integration and are scoped to Production; local development continues to use its own SQLite file.
+The Vercel project `tactix` is connected to `2peng23/tictactoe-rio`. Every push to `main` automatically builds and updates the production site at [tactix-kappa.vercel.app](https://tactix-kappa.vercel.app). Production database credentials are managed by the Turso integration and are scoped to Production; local development continues to use its own SQLite file.
 
 1. Create a persistent database in [Turso](https://turso.tech/) and obtain its `libsql://` database URL and an authentication token.
 2. Add this project to a Git repository and import it into [Vercel](https://vercel.com/new), selecting the Next.js preset. Alternatively, use Vercel’s CLI from this directory.
