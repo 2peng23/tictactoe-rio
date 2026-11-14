@@ -1,0 +1,12 @@
+{
+  "name": "TacTix",
+  "short_name": "TacTix",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f4f9",
+  "theme_color": "#6a28d9",
+  "icons": [
+    { "src": "/brand/tactix-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/brand/tactix-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
