@@ -3,6 +3,11 @@ export type Cell = Seat | null;
 export type Visibility = "public" | "private";
 export type StarterChoice = "bolt" | "flame" | "random";
 export type GameResult = Seat | "draw" | null;
+export type RoomAction =
+  | { action: "move"; position: number }
+  | { action: "starter"; starterChoice: StarterChoice }
+  | { action: "start" | "reset" | "leave" };
+export type BusyAction = RoomAction["action"] | "create" | "join";
 
 export interface StoredPlayer {
   name: string;
@@ -33,7 +38,10 @@ export interface StoredRoom {
 }
 
 export interface RoomView extends Omit<StoredRoom, "players"> {
-  players: [{ name: string; online: boolean } | null, { name: string; online: boolean } | null];
+  players: [
+    { name: string; online: boolean } | null,
+    { name: string; online: boolean } | null,
+  ];
   yourSeat: Seat;
   status: "waiting" | "ready" | "playing" | "finished" | "closed";
 }
@@ -47,10 +55,7 @@ export interface LobbySummary {
   yours: boolean;
 }
 
-export const CHARACTERS = [
-  { name: "Bolt", label: "Team Bolt", color: "mint" },
-  { name: "Flame", label: "Team Flame", color: "orange" },
-] as const;
+export const CHARACTERS = [{ name: "Bolt" }, { name: "Flame" }] as const;
 
 export function formatCode(code: string): string {
   return code.match(/.{1,4}/g)?.join("-") ?? code;

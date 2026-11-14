@@ -9,7 +9,13 @@ type Context = { params: Promise<{ code: string }> };
 export async function GET(request: NextRequest, context: Context) {
   return handleApi(request, async (tokenHash) => {
     const { code } = await context.params;
-    return { room: await getRoom(code, tokenHash, request.nextUrl.searchParams.get("heartbeat") === "1") };
+    return {
+      room: await getRoom(
+        code,
+        tokenHash,
+        request.nextUrl.searchParams.get("heartbeat") === "1",
+      ),
+    };
   });
 }
 export async function POST(request: NextRequest, context: Context) {

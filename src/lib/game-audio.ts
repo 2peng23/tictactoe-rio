@@ -20,9 +20,14 @@ export class GameAudio {
     limiter.release.value = 0.12;
     this.master.connect(limiter);
     limiter.connect(this.context.destination);
-    this.noise = this.context.createBuffer(1, this.context.sampleRate, this.context.sampleRate);
+    this.noise = this.context.createBuffer(
+      1,
+      this.context.sampleRate,
+      this.context.sampleRate,
+    );
     const samples = this.noise.getChannelData(0);
-    for (let index = 0; index < samples.length; index += 1) samples[index] = Math.random() * 2 - 1;
+    for (let index = 0; index < samples.length; index += 1)
+      samples[index] = Math.random() * 2 - 1;
   }
 
   async unlock() {
@@ -34,23 +39,38 @@ export class GameAudio {
     const now = this.context.currentTime;
     this.master.gain.cancelScheduledValues(now);
     this.master.gain.setTargetAtTime(muted ? 0 : 0.45, now, 0.008);
-    if (muted) for (const voice of this.voices) {
-      try { voice.stop(now + 0.025); } catch { /* Already completed. */ }
-    }
+    if (muted)
+      for (const voice of this.voices) {
+        try {
+          voice.stop(now + 0.025);
+        } catch {
+          /* Already completed. */
+        }
+      }
   }
 
-  private get ready() { return !this.muted && this.context.state === "running"; }
+  private get ready() {
+    return !this.muted && this.context.state === "running";
+  }
 
   private envelope(time: number, duration: number, volume: number) {
     const gain = this.context.createGain();
     gain.gain.setValueAtTime(0.0001, time);
-    gain.gain.linearRampToValueAtTime(volume, time + Math.min(0.008, duration / 4));
+    gain.gain.linearRampToValueAtTime(
+      volume,
+      time + Math.min(0.008, duration / 4),
+    );
     gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
     gain.connect(this.master);
     return gain;
   }
 
-  private track(voice: AudioScheduledSourceNode, nodes: AudioNode[], time: number, duration: number) {
+  private track(
+    voice: AudioScheduledSourceNode,
+    nodes: AudioNode[],
+    time: number,
+    duration: number,
+  ) {
     this.voices.add(voice);
     voice.onended = () => {
       this.voices.delete(voice);
@@ -60,18 +80,35 @@ export class GameAudio {
     voice.stop(time + duration + 0.015);
   }
 
-  private tone(frequency: number, endFrequency: number, duration: number, volume: number, time: number, type: OscillatorType = "sine") {
+  private tone(
+    frequency: number,
+    endFrequency: number,
+    duration: number,
+    volume: number,
+    time: number,
+    type: OscillatorType = "sine",
+  ) {
     const oscillator = this.context.createOscillator();
     const gain = this.envelope(time, duration, volume);
     oscillator.type = type;
     oscillator.frequency.setValueAtTime(frequency, time);
-    oscillator.frequency.exponentialRampToValueAtTime(endFrequency, time + duration);
+    oscillator.frequency.exponentialRampToValueAtTime(
+      endFrequency,
+      time + duration,
+    );
     oscillator.connect(gain);
     oscillator.start(time);
     this.track(oscillator, [gain], time, duration);
   }
 
-  private noiseBurst(frequency: number, endFrequency: number, duration: number, volume: number, time: number, type: BiquadFilterType) {
+  private noiseBurst(
+    frequency: number,
+    endFrequency: number,
+    duration: number,
+    volume: number,
+    time: number,
+    type: BiquadFilterType,
+  ) {
     const source = this.context.createBufferSource();
     const filter = this.context.createBiquadFilter();
     const gain = this.envelope(time, duration, volume);
@@ -79,7 +116,10 @@ export class GameAudio {
     filter.type = type;
     filter.Q.value = 0.8;
     filter.frequency.setValueAtTime(frequency, time);
-    filter.frequency.exponentialRampToValueAtTime(endFrequency, time + duration);
+    filter.frequency.exponentialRampToValueAtTime(
+      endFrequency,
+      time + duration,
+    );
     source.connect(filter);
     filter.connect(gain);
     source.start(time, Math.random() * 0.5);
@@ -103,25 +143,58 @@ export class GameAudio {
   playStart(seat: Seat, random: boolean) {
     if (!this.ready) return;
     const time = this.context.currentTime + 0.006;
-    if (random) for (let index = 0; index < 3; index += 1) this.tone(650 + index * 90, 620 + index * 90, 0.035, 0.035, time + index * 0.04);
-    this.tone(seat === 0 ? 880 : 440, seat === 0 ? 1174 : 587, 0.12, 0.08, time + (random ? 0.13 : 0));
+    if (random)
+      for (let index = 0; index < 3; index += 1)
+        this.tone(
+          650 + index * 90,
+          620 + index * 90,
+          0.035,
+          0.035,
+          time + index * 0.04,
+        );
+    this.tone(
+      seat === 0 ? 880 : 440,
+      seat === 0 ? 1174 : 587,
+      0.12,
+      0.08,
+      time + (random ? 0.13 : 0),
+    );
   }
 
   playResult(result: "win" | "loss" | "draw") {
     if (!this.ready) return;
     const time = this.context.currentTime + 0.14;
-    const notes = result === "win" ? [523.25, 659.25, 783.99] : result === "loss" ? [392, 329.63] : [440, 554.37];
+    const notes =
+      result === "win"
+        ? [523.25, 659.25, 783.99]
+        : result === "loss"
+          ? [392, 329.63]
+          : [440, 554.37];
     for (const [index, frequency] of notes.entries()) {
-      this.tone(frequency, frequency, result === "win" ? 0.23 : 0.18, result === "win" ? 0.1 : 0.075, time + (result === "draw" ? 0 : index * 0.09), result === "loss" ? "triangle" : "sine");
+      this.tone(
+        frequency,
+        frequency,
+        result === "win" ? 0.23 : 0.18,
+        result === "win" ? 0.1 : 0.075,
+        time + (result === "draw" ? 0 : index * 0.09),
+        result === "loss" ? "triangle" : "sine",
+      );
     }
   }
 
   playEnabled() {
-    if (this.ready) this.tone(740, 980, 0.08, 0.06, this.context.currentTime + 0.006);
+    if (this.ready)
+      this.tone(740, 980, 0.08, 0.06, this.context.currentTime + 0.006);
   }
 
   dispose() {
-    for (const voice of this.voices) { try { voice.stop(); } catch { /* Already completed. */ } }
+    for (const voice of this.voices) {
+      try {
+        voice.stop();
+      } catch {
+        /* Already completed. */
+      }
+    }
     this.voices.clear();
     void this.context.close().catch(() => {});
   }

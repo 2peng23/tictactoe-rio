@@ -1,7 +1,10 @@
 export const POLL_INTERVAL = 1000;
 
 /** One active request, a one-second start cadence, and an immediate reconnect refresh. */
-export function startPolling(operation: (signal: AbortSignal) => Promise<void>, onOffline?: () => void): () => void {
+export function startPolling(
+  operation: (signal: AbortSignal) => Promise<void>,
+  onOffline?: () => void,
+): () => void {
   const controller = new AbortController();
   let timer: ReturnType<typeof setTimeout>;
   let stopped = false;
@@ -10,7 +13,10 @@ export function startPolling(operation: (signal: AbortSignal) => Promise<void>, 
 
   async function poll() {
     if (stopped) return;
-    if (running) { queued = true; return; }
+    if (running) {
+      queued = true;
+      return;
+    }
     if (!navigator.onLine) {
       onOffline?.();
       timer = setTimeout(poll, POLL_INTERVAL);
@@ -18,11 +24,14 @@ export function startPolling(operation: (signal: AbortSignal) => Promise<void>, 
     }
     running = true;
     const started = performance.now();
-    try { await operation(controller.signal); }
-    finally {
+    try {
+      await operation(controller.signal);
+    } finally {
       running = false;
       if (!stopped) {
-        const delay = queued ? 0 : Math.max(0, POLL_INTERVAL - (performance.now() - started));
+        const delay = queued
+          ? 0
+          : Math.max(0, POLL_INTERVAL - (performance.now() - started));
         queued = false;
         timer = setTimeout(poll, delay);
       }
@@ -34,7 +43,9 @@ export function startPolling(operation: (signal: AbortSignal) => Promise<void>, 
     clearTimeout(timer);
     void poll();
   };
-  const offline = () => { onOffline?.(); };
+  const offline = () => {
+    onOffline?.();
+  };
   document.addEventListener("visibilitychange", wake);
   window.addEventListener("focus", wake);
   window.addEventListener("online", wake);
