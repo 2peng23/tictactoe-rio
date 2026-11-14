@@ -1,4 +1,4 @@
-import { createClient, type Client } from "@libsql/client";
+import type { Client } from "@libsql/client";
 import { mkdirSync } from "node:fs";
 import path from "node:path";
 import { GameError, normalizeRoom } from "./game";
@@ -8,7 +8,7 @@ let databasePromise: Promise<Client> | undefined;
 
 async function initializeDatabase(): Promise<Client> {
   const remoteUrl = process.env.TURSO_DATABASE_URL;
-  if (process.env.VERCEL && !remoteUrl) {
+  if (process.env.VERCEL && (!remoteUrl || !process.env.TURSO_AUTH_TOKEN)) {
     throw new GameError("The arcade needs its shared database. Configure TURSO_DATABASE_URL and TURSO_AUTH_TOKEN in Vercel.", 503);
   }
   if (process.env.VERCEL && remoteUrl?.startsWith("file:")) {
@@ -16,6 +16,9 @@ async function initializeDatabase(): Promise<Client> {
   }
   const directory = path.join(process.cwd(), ".data");
   if (!remoteUrl) mkdirSync(directory, { recursive: true });
+  const { createClient } = !remoteUrl || remoteUrl.startsWith("file:")
+    ? await import("@libsql/client")
+    : await import("@libsql/client/web");
   const database = createClient({
     url: remoteUrl || `file:${path.join(directory, "arcade.db")}`,
     authToken: process.env.TURSO_AUTH_TOKEN || undefined,
